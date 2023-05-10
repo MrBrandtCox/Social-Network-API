@@ -25,17 +25,14 @@ module.exports = {
   // Get a single thought
   async getThought(req, res) {
     try {
-      const thoughtData = await Thought.findOne({ _id: req.params.studentId })
+      const thoughtData = await Thought.findOne({ _id: req.params.thoughtId })
         .select('-__v');
 
-      if (!student) {
-        return res.status(404).json({ message: 'No student with that ID' })
+      if (!thoughtData) {
+        return res.status(404).json({ message: 'No thought with that ID' })
       }
 
-      res.json({
-        student,
-        grade: await grade(req.params.studentId),
-      });
+      res.json(thoughtData);
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
@@ -44,30 +41,60 @@ module.exports = {
   // create a new thought
   async createThought(req, res) {
     try {
-      const student = await Thought.create(req.body);
-      res.json(student);
+      const thoughtData = await Thought.create(req.body);
+      //res.json(thoughtData);
+      if(thoughtData) {
+        await User.findOneAndUpdate(
+          { _id: req.params.userId },
+          { $push: {thoughts: thoughtData._id} },
+          { new: true }
+        );
+      }
+
+
     } catch (err) {
       res.status(500).json(err);
     }
   },
+
+  //update Thought
+  async updateThought(req, res) {
+    console.log("Update user");
+    try {
+      const thoughtData = await Thought.findOneAndUpdate(
+        { _id: req.params.thoughtId },
+        { $set: req.body },
+        { runValidators: true, new: true }
+      );
+
+      if (!thoughtData) {
+        res.status(404).json({ message: 'No user with this id!' });
+      }
+
+      res.json(thoughtData);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
+
   // Delete a thought and remove them from the user
   async deleteThought(req, res) {
     try {
-      const student = await Thought.findOneAndRemove({ _id: req.params.studentId });
+      const thoughtData = await Thought.findOneAndRemove({ _id: req.params.thoughtId });
 
-      if (!student) {
-        return res.status(404).json({ message: 'No such student exists' });
+      if (!thoughtData) {
+        return res.status(404).json({ message: 'No such thought exists' });
       }
 
-      const course = await Course.findOneAndUpdate(
-        { students: req.params.studentId },
-        { $pull: { students: req.params.studentId } },
+      const userData = await User.findOneAndUpdate(
+        { thoughts: req.params.thoughtId },
+        { $pull: { thoughts: req.params.thoughtId } },
         { new: true }
       );
 
-      if (!course) {
+      if (!userData) {
         return res.status(404).json({
-          message: 'Thought deleted, but no users found',
+          message: 'Thought deleted, but no user found',
         });
       }
 
@@ -80,23 +107,23 @@ module.exports = {
 
   // Add a Reaction
   async addReaction(req, res) {
-    console.log('You are adding an assignment');
+    console.log('You are adding a reaction');
     console.log(req.body);
 
     try {
-      const student = await Thought.findOneAndUpdate(
-        { _id: req.params.studentId },
-        { $addToSet: { assignments: req.body } },
+      const thoughtData = await Thought.findOneAndUpdate(
+        { _id: req.params.thoughtId },
+        { $addToSet: { reactions: req.body } },
         { runValidators: true, new: true }
       );
 
-      if (!student) {
+      if (!thoughtData) {
         return res
           .status(404)
           .json({ message: 'No thought found with that ID :(' });
       }
 
-      res.json(student);
+      res.json(thoughtData);
     } catch (err) {
       res.status(500).json(err);
     }
@@ -104,19 +131,19 @@ module.exports = {
   // Remove Reaction
   async removeReaction(req, res) {
     try {
-      const student = await Thought.findOneAndUpdate(
-        { _id: req.params.studentId },
-        { $pull: { assignment: { assignmentId: req.params.assignmentId } } },
+      const thoughtData = await Thought.findOneAndUpdate(
+        { _id: req.params.thoughtId },
+        { $pull: { reactions: { reactionId: req.params.reactionId } } },
         { runValidators: true, new: true }
       );
 
-      if (!student) {
+      if (!thoughtData) {
         return res
           .status(404)
           .json({ message: 'No thought found with that ID :(' });
       }
 
-      res.json(student);
+      res.json(thoughtData);
     } catch (err) {
       res.status(500).json(err);
     }

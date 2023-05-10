@@ -9,16 +9,16 @@ const {
   removeReaction,
 } = require('../../controllers/thoughtController');
 
-// /api/students
+// /api/thoughts
 router.route('/').get(getAllThoughts).post(createThought);
 
-// /api/students/:studentId
-router.route('/:studentId').get(getThought).delete(deleteThought);
+// /api/thoughts/:thoughtId
+router.route('/:thoughtId').get(getThought).put(updateThought).delete(deleteThought);
 
-// /api/students/:studentId/assignments
-router.route('/:studentId/assignments').post(addReaction);
+// /api/thoughts/:thoughtId/reactions
+router.route('/:thoughtId/reactions').post(addReaction);
 
-// /api/students/:studentId/assignments/:assignmentId
-router.route('/:studentId/assignments/:assignmentId').delete(removeReaction);
+// /api/thoughts/:thoughtId/reactions/:reactionId
+router.route('/:thoughtId/reactions/:reactionId').delete(removeReaction);
 
 module.exports = router;

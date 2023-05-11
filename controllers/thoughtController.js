@@ -14,7 +14,7 @@ module.exports = {
   // Get all thoughts
   async getAllThoughts(req, res) {
     try {
-      const thoughtData = await Student.find();
+      const thoughtData = await Thought.find(); //Thought was Student
 
       res.json(thoughtData);
     } catch (err) {
